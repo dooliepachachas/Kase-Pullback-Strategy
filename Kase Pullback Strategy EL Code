@@ -1,0 +1,73 @@
+Inputs:
+	Price( Close ) [DisplayName = "Price", ToolTip = 
+	 "Enter an EasyLanguage expression to use in the moving average calculations."], 
+	fMALength( 10 ) [DisplayName = "Fast Moving Average Length", ToolTip = 
+	 "Enter the number of bars used in the calculation of the moving average."], 
+	sMALength( 15 ) [DisplayName = "Slow Moving Average Length", ToolTip = 
+	 "Enter the number of bars used in the calculation of the moving average."],
+	mMALength( 50 ) [DisplayName = "Trend Moving Average Length", ToolTip = 
+	 "Enter the number of bars used in the calculation of the moving average."];
+
+Variables:
+	Counter( 0 ),
+	fMA( 0 ),
+	sMA( 0 ),
+	mMA( 0 ),
+	longRetracement( 0 ),
+	longRetracementLength( 0 ),
+	shortRetracement( 0 ),
+	shortRetracementLength( 0 ),
+	lOExtremeVal1( 0 ),
+	lOExtremeBar1( 0 ),
+	lOExtremeVal2( 0 ),
+	lOExtremeBar2( 0 ),
+	sOExtremeVal1( 0 ),
+	sOExtremeBar1( 0 ),
+	sOExtremeVal2( 0 ),
+	sOExtremeBar2( 0 ),
+	hasTouched( 0 );
+
+//get uptrend retracement length
+If Close[1] > Close Then
+	longRetracementLength = 0;
+	longRetracementLength = longRetracementLength + 1;
+If shortRetracementLength > 0 Then
+	longRetracementLength = longRetracementLength;
+
+//Get downtrend retracement length
+If Close[1] < Close Then
+	shortRetracementLength = 0;
+	shortRetracementLength = shortRetracementLength + 1;
+If longRetracementLength > 0 Then
+	shortRetracementLength = shortRetracementLength;
+	
+//Initialize Moving Averages
+fMA = XAverage(Price, fMALength);
+sMA = XAverage(Price, sMALength);
+mMA = XAverage(Price, mMALength);
+
+//Get Highest and Lowest values from pullbacks
+Value1 = Extremes(Price, longRetracementLength, -1, lOExtremeVal1, lOExtremeBar1);
+Value2 = Extremes(Price, longRetracementLength, 1, lOExtremeVal2, lOExtremeBar2);
+Value3 = Extremes(Price, shortRetracementLength, 1, sOExtremeVal1, sOExtremeBar1);
+Value4 = Extremes(Price, shortRetracementLength, -1, sOExtremeVal2, sOExtremeBar2);
+longRetracement = lOExtremeVal1;
+shortRetracement = sOExtremeVal1;
+
+//Retracement Extension Target
+
+
+//Check if Price retracement touched SMA
+If longRetracement < sMA Then
+	hasTouched = 1
+Else
+	hasTouched = 0;
+
+//Long Entry Setup
+If Close[1] < Open[1] Then	
+	If Close[1] < fMA Then 
+		If Close > sMA Then
+			If Close > mMA Then
+				If Close[1] < Close Then
+					If hasTouched = 0 Then
+						Buy ( !( "KaseLE" )) Next bar at Market;
